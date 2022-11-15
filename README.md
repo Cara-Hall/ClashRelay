@@ -27,7 +27,7 @@
 **说明**：基于`yml`配置文件，添加远程规则，实现在线更新<br>
 
 **步骤**：
-1. [下载配置文件](https://raw.githubusercontent.com/Cara-Hall/ClashRelay/main/clash-premium.yml)；
+1. [下载配置文件](https://raw.githubusercontent.com/Cara-Hall/-ClashRelay/main/clash-premium.yml)；
 
 2. 修改`line 22`你的订阅链接，按模板修改`proxies`里自定义节点；
 
