@@ -17,7 +17,7 @@
 **说明**：基于已有订阅链接，无感添加`relay`策略组<br>
 
 **步骤**：
-1. ClashForWindows定位到`Setttings-Profiles-Parsers`，点`Edit`，复制[这段代码](https://raw.githubusercontent.com/Cara-Hall/ClashRelay/main/parsers.yaml)，粘贴进去，修改自定义节点，保存；
+1. ClashForWindows定位到`Setttings-Profiles-Parsers`，点`Edit`，复制[这段代码](https://raw.githubusercontent.com/Cara-Hall/-ClashRelay/main/parsers.yaml)，粘贴进去，修改自定义节点，保存；
 
 2. 定位到`Profiles`，右键配置文件`Settings`，在订阅链接的`URL`后面添加`#relay`，保存；
 
