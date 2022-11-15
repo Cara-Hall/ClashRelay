@@ -1,0 +1,281 @@
+port: 7890
+socks-port: 7891
+allow-lan: true
+mode: rule
+log-level: info
+external-controller: 127.0.0.1:9090
+dns:
+  enable: true
+  enabled: true
+  nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+  fallback:
+    - 8.8.8.8
+    - 8.8.4.4
+    - tls://1.0.0.1:853
+    - tls://dns.google:853
+
+proxy-providers:
+  All:
+    type: http
+    url: "https://api.v1.mk/sub?target=clash&url=你的订阅链接&list=true&udp=true"
+    # 可以使用任意类型的链接替换上面文字，多个链接使用英文符号的竖杠|隔开一起写上即可；也可以将Clash订阅链接替换掉整个引号""内的链接
+    interval: 3600
+    path: ./all.yaml
+    health-check:
+      enable: true
+      interval: 600
+      url: http://www.gstatic.com/generate_204
+
+proxies:
+# shadowsocks
+# 所支持的加密方式与 go-shadowsocks2 保持一致
+# 支持加密方式：
+#   aes-128-gcm aes-192-gcm aes-256-gcm
+#   aes-128-cfb aes-192-cfb aes-256-cfb
+#   aes-128-ctr aes-192-ctr aes-256-ctr
+#   rc4-md5 chacha20-ietf xchacha20
+#   chacha20-ietf-poly1305 xchacha20-ietf-poly1305
+
+# Shadowsocks
+# 第一种配置
+#- name: "你的SS节点1"               # 软件显示的节点名字
+#  type: ss                                  # 代理类型
+#  server: 1.2.4.8                          # 服务器 IP
+#  port: 443                                 #  端口号
+#  cipher: chacha20-ietf-poly1305   # 加密方法
+#  password: "password"                # SS 密码
+#  # udp: true                                #默认不开启
+
+# Shadowsocks + simple-obfs
+# 第二种配置
+#- name: "你的SS节点2"               # 软件显示的节点名字
+#  type: ss                                  # 代理类型
+#  server: 1.2.4.8                          # 服务器 IP
+#  port: 443                                 #  端口号
+#  cipher: chacha20-ietf-poly1305   # 加密方法
+#  password: "password"                # SS 密码
+#  plugin: obfs
+#  plugin-opts:
+#    mode: tls # or http               #  大部分选择 HTTP
+#  #  host: bing.com                  #  伪装
+
+# Shadowsocks + v2ray-plugin
+# 第三种配置
+# - name: "你的SS节点3"
+#   type: ss
+#   server: 1.2.4.8
+#   port: 443
+#   cipher: chacha20-ietf-poly1305
+#   password: "password"
+#   plugin: v2ray-plugin
+#   plugin-opts:
+#     mode: websocket # no QUIC now
+#     # tls: true # wss
+#     # skip-cert-verify: true
+#     # host: bing.com
+#     # path: "/"
+#     # mux: true
+#     # headers:
+#     #   custom: value
+
+# vmess
+# 支持加密方式：auto / aes-128-gcm / chacha20-poly1305 / none
+- name: "你的自建节点"
+  type: vmess
+  server: server
+  port: 443
+  uuid: uuid
+  alterId: 32
+  cipher: auto
+  udp: true
+  tls: true
+  skip-cert-verify: true
+  network: ws
+  ws-path: /path
+  ws-headers:
+    Host: v2ray.com
+
+# socks5
+# - name: "socks"
+#   type: socks5
+#   server: server
+#   port: 443
+#   username: username
+#   password: password
+#   tls: true
+#   skip-cert-verify: true
+#   udp: true
+
+# http
+# - name: "http"
+#   type: http
+#   server: server
+#   port: 443
+#   username: username
+#   password: password
+#   tls: true # https
+#   skip-cert-verify: true
+
+# snell
+# - name: "snell"
+#   type: snell
+#   server: server
+#   port: 44046
+#   psk: yourpsk
+#   obfs-opts:
+  #   mode: http # 或 tls
+  #   host: bing.com
+
+# Trojan的配置
+# - name: "trojan"
+#   type: trojan
+#   server: server
+#   port: 443
+#   password: password
+#   #上面几行为必选参数
+#   #下面几行为可选参数  根据你的配置情况来
+#   # udp: true
+#   # sni: example.com # aka server name
+#   # alpn:
+#   #   - h2
+#   #   - http/1.1
+#   # skip-cert-verify: true
+
+proxy-groups:
+  - name: 🚀 节点选择
+    type: select
+    use:
+      - All
+    proxies:
+      - ♻️ 自动选择
+      - 🔯 故障转移
+      - 🔮 负载均衡
+      - 🔗 链式代理
+      - DIRECT
+
+  - name: ♻️ 自动选择
+    type: url-test
+    use:
+       - All
+    url: "http://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 50
+    
+  - name: 🔯 故障转移
+    type: fallback
+    use:
+       - All
+    url: "http://www.gstatic.com/generate_204"
+    interval: 180
+    
+  - name: 🔮 负载均衡
+    type: load-balance
+    use:
+       - All
+    url: "http://www.gstatic.com/generate_204"
+    interval: 180
+
+  - name: 🔗 链式代理
+    type: relay
+    proxies:
+       - ♻️ 自动选择
+       - 你的自建节点              #你的自建节点name
+
+  - name: 🍎 苹果服务
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🎯 全球直连
+
+  - name: Ⓜ️ 微软服务
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🎯 全球直连
+
+  - name: 🎯 全球直连
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 节点选择
+      - ♻️ 自动选择
+
+  - name: 🛑 全球拦截
+    type: select
+    proxies:
+      - REJECT
+      - 🚀 节点选择
+
+  - name: 🐟 漏网之鱼
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🎯 全球直连
+
+rule-providers:
+
+  Direct:
+    type: http
+    behavior: classical
+    url: "https://ghproxy.com/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Direct/Direct.yaml"
+    path: ./ruleset/direct.yaml
+    interval: 86400
+
+  adblock:
+    type: http
+    behavior: classical
+    url: "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Advertising/Advertising_Classical.yaml"
+    path: ./ruleset/Advertising_Classical.yaml
+    interval: 86400
+
+  EasyPrivacy:
+    type: http
+    behavior: classical
+    url: "https://ghproxy.com/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/EasyPrivacy/EasyPrivacy_Classical.yaml"
+    path: ./ruleset/Advertising_Classical.yaml
+    interval: 86400
+
+  Apple:
+    type: http
+    behavior: classical
+    url: "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Apple/Apple.yaml"
+    path: ./ruleset/Apple.yaml
+    interval: 86400
+
+  Microsoft:
+    type: http
+    behavior: classical
+    url: "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Microsoft/Microsoft.yaml"
+    path: ./ruleset/Microsoft.yaml
+    interval: 86400
+
+  China:
+    type: http
+    behavior: classical
+    url: "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/China/China.yaml"
+    path: ./ruleset/China.yaml
+    interval: 86400
+
+rules:
+  - RULE-SET,Direct,DIRECT
+  - RULE-SET,adblock,🛑 全球拦截
+  - RULE-SET,EasyPrivacy,🛑 全球拦截
+  - RULE-SET,Apple,🍎 苹果服务
+  - RULE-SET,Microsoft,Ⓜ️ 微软服务
+  - RULE-SET,China,🎯 全球直连
+  - IP-CIDR,192.168.0.0/16,DIRECT
+  - IP-CIDR,10.0.0.0/8,DIRECT
+  - IP-CIDR,172.16.0.0/12,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT
+  - IP-CIDR,100.64.0.0/10,DIRECT
+  - IP-CIDR,224.0.0.0/4,DIRECT
+  - IP-CIDR,fe80::/10,DIRECT
+  - IP-CIDR,119.28.28.28/32,DIRECT
+  - IP-CIDR,182.254.116.0/24,DIRECT
+  - GEOIP,CN,🎯 全球直连
+  - MATCH,🐟 漏网之鱼

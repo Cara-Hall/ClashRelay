@@ -1,0 +1,26 @@
+parsers: # array
+  - reg: 'relay$'
+    yaml:
+      append-proxy-groups: # 添加relay策略组
+        - name: 🔗 链式代理
+          type: relay
+      append-proxies: # 添加自建节点
+        - name: "你的自建节点"
+          type: vmess
+          server: server
+          port: 443
+          uuid: uuid
+          alterId: 0
+          cipher: auto
+          udp: true
+          tls: true
+          skip-cert-verify: true
+          network: ws
+          ws-path: /path
+          ws-headers:
+            Host: v2ray.com 
+      commands:
+        - proxy-groups.🔗 链式代理.proxies=[]groupNames|♻️ 自动选择         # relay组添加自动选择
+        - proxy-groups.🔗 链式代理.proxies.1+[]proxyNames|你的自建节点      # relay组添加自建节点
+        - proxy-groups.🚀 节点选择.proxies.0+🔗 链式代理                    # 节点选择添加relay组
+        - proxy-groups.🚀 节点选择.proxies.1+[]proxyNames|你的自建节点      # 节点选择添加自建节点
